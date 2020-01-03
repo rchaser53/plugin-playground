@@ -10,8 +10,16 @@ fn main() {
     };
 }
 
-fn execute() -> Result<Vec<u8>, std::io::Error> {
+fn execute() -> Result<Vec<u8>, String> {
     let stdout = std::process::Stdio::piped();
-    let result = Command::new("ls").stdout(stdout).args(&["-a"]).output()?;
-    Ok(result.stdout)
+    let result = Command::new("ls")
+        .stdout(stdout)
+        .args(&["-z"])
+        .output()
+        .unwrap();
+    if result.status.success() {
+        Ok(result.stdout)
+    } else {
+        Err(from_utf8(&result.stderr).unwrap().to_string())
+    }
 }
